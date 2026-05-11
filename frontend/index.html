@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Smart Baby Monitor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- LOGIN / SIGNUP -->
+
+<div class="container" id="auth">
+  <h2>👶 Baby Monitor Login</h2>
+
+<input id="username" placeholder="Username"><br> <input id="password" type="password" placeholder="Password"><br>
+
+<button onclick="signup()">Sign Up</button> <button onclick="login()">Login</button>
+
+</div>
+
+<!-- DASHBOARD -->
+
+<div id="dashboard">
+  <h1>👶 Smart Baby Monitor</h1>
+
+  <div class="card">
+    <div id="status">Baby is Calm 😴</div>
+  </div>
+
+  <div class="card">
+    <h3>📷 Camera</h3>
+    <video id="camera" autoplay></video>
+  </div>
+
+  <div class="card">
+    <h3>🎮 Controls</h3>
+    <button onclick="startRock()">Start Rocking</button>
+    <button onclick="stopRock()">Stop</button><br>
+
+```
+<input type="range" min="0" max="100" id="speed"><br>
+
+<button onclick="playMusic()">🎵 Play Music</button>
+<button onclick="speak()">🎤 Speak</button>
+```
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
