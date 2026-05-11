@@ -17,23 +17,26 @@ const char* password = "adamwahidd";
 
 // ================= SERVER =================
 
-// CHANGE TO YOUR LAPTOP IP
+// CHANGE THIS TO YOUR LAPTOP IP
 const char* serverURL =
   "http://172.20.10.10:5000/api/sound";
 
 // ================= SETTINGS =================
 
-int threshold = 80;
+// Adjust after testing sensor values
+int threshold = 1500;
 
 void setup() {
 
   Serial.begin(115200);
 
-  Serial.println("\n\n===== ESP32 START =====");
+  Serial.println("\n===== ESP32 START =====");
 
   // ================= SERVO =================
 
   myServo.attach(SERVO_PIN);
+
+  // middle position
   myServo.write(90);
 
   Serial.println("Servo Ready");
@@ -50,21 +53,26 @@ void loop() {
   Serial.print("Sound Level: ");
   Serial.println(sound);
 
-  // sound detected
+  // ================= SOUND DETECTED =================
+
   if (sound > threshold) {
 
     Serial.println("🔊 SOUND DETECTED!");
 
-    // move servo
+    // rock cradle
     myServo.write(0);
-    delay(800);
+    delay(700);
+
+    myServo.write(180);
+    delay(700);
 
     myServo.write(90);
 
-    // send to Flask
+    // send data to backend
     sendToFlask(sound);
 
-    delay(2000);
+    // avoid spam
+    delay(3000);
   }
 
   delay(100);
@@ -92,22 +100,16 @@ void connectWiFi() {
 
     tries++;
 
-    // timeout after ~20 sec
     if (tries > 40) {
 
       Serial.println("\n❌ WIFI CONNECTION FAILED");
-
-      Serial.println("CHECK:");
-      Serial.println("- SSID");
-      Serial.println("- PASSWORD");
-      Serial.println("- 2.4GHz WiFi");
-      Serial.println("- Hotspot compatibility");
 
       return;
     }
   }
 
   Serial.println("\n✅ WIFI CONNECTED!");
+
   Serial.print("ESP32 IP: ");
 
   Serial.println(WiFi.localIP());
@@ -153,8 +155,8 @@ void sendToFlask(int value) {
 
     Serial.print("Server Response: ");
     Serial.println(response);
-  }
-  else {
+
+  } else {
 
     Serial.println("❌ Failed to send request");
   }
