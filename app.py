@@ -1,72 +1,60 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify, send_from_directory
+from flask_socketio import SocketIO
 import time
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-CORS(app)
+latest_command = None
 
-# =========================================
-# GLOBAL STATUS
-# =========================================
+# ================= FRONTEND =================
+@app.route("/")
+def home():
+    return send_from_directory("frontend", "index.html")
 
-baby_status = {
-    "sound": 0,
-    "crying": False,
-    "last_update": "Never"
-}
+@app.route("/<path:path>")
+def static_files(path):
+    return send_from_directory("frontend", path)
 
-# =========================================
-# RECEIVE DATA FROM ESP32
-# =========================================
+# ================= CONTROL =================
+@app.route("/api/control", methods=["POST"])
+def control():
+    global latest_command
 
+    data = request.get_json()
+    latest_command = data.get("command")
+
+    print("COMMAND RECEIVED:", latest_command)
+
+    return "OK"
+
+# ================= ESP32 =================
+@app.route("/api/get_command", methods=["GET"])
+def get_command():
+    global latest_command
+    return jsonify({"command": latest_command})   # ✅ DO NOT CLEAR HERE
+
+# ================= CLEAR COMMAND =================
+@app.route("/api/clear_command", methods=["POST"])
+def clear_command():
+    global latest_command
+    latest_command = None
+    return "CLEARED"
+
+# ================= SOUND =================
 @app.route("/api/sound", methods=["POST"])
-def receive_sound():
+def sound():
+    value = request.form.get("sound")
 
-    sound = request.form.get("sound")
+    print("SOUND:", value)
 
-    if sound is None:
-
-        return jsonify({
-            "error": "No sound data"
-        }), 400
-
-    sound = int(sound)
-
-    crying = sound > 1500
-
-    baby_status["sound"] = sound
-    baby_status["crying"] = crying
-    baby_status["last_update"] = time.strftime("%H:%M:%S")
-
-    print("================================")
-    print(f"Sound Received: {sound}")
-    print(f"Crying: {crying}")
-    print("================================")
-
-    return jsonify({
-        "message": "Data received successfully",
-        "sound": sound,
-        "crying": crying
+    socketio.emit("update", {
+        "value": value,
+        "time": time.strftime("%H:%M:%S")
     })
 
-# =========================================
-# SEND STATUS TO FRONTEND
-# =========================================
+    return "OK"
 
-@app.route("/api/status", methods=["GET"])
-def get_status():
-
-    return jsonify(baby_status)
-
-# =========================================
-# MAIN
-# =========================================
-
+# ================= RUN =================
 if __name__ == "__main__":
-
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=True
-    )
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)    
