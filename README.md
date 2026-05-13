@@ -149,8 +149,5 @@ AI-based cry detection
 
 Cloud deployment instead of ngrok
 
-📷 Screenshots
-(Add your GUI screenshots here)
-
 📄 License
 This project is for educational purposes.
